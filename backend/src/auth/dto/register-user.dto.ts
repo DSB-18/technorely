@@ -3,7 +3,7 @@ import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
-  name: string; // Updated from username to name
+  name: string;
 
   @IsEmail()
   email: string;
@@ -14,5 +14,5 @@ export class CreateUserDto {
 
   @IsString()
   @IsNotEmpty()
-  role: string; // Added role validation
+  role: string;
 }

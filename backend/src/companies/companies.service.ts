@@ -11,9 +11,15 @@ export class CompaniesService {
     private companiesRepository: Repository<Company>,
   ) {}
 
-  async create(companyData: CreateCompanyDto): Promise<Company> {
-    const company = this.companiesRepository.create(companyData);
-    return this.companiesRepository.save(company);
+  async create(
+    createCompanyDto: CreateCompanyDto,
+    user: any,
+  ): Promise<Company> {
+    const newCompany = this.companiesRepository.create({
+      ...createCompanyDto,
+      owner: user.id,
+    });
+    return this.companiesRepository.save(newCompany);
   }
 
   async findAll(): Promise<Company[]> {
@@ -26,13 +32,14 @@ export class CompaniesService {
 
   async update(
     id: number,
-    companyData: Partial<CreateCompanyDto>,
+    updateCompanyDto: Partial<CreateCompanyDto>,
+    user: any,
   ): Promise<Company> {
-    await this.companiesRepository.update(id, companyData);
-    return this.findOne(id);
+    const company = await this.findOne(id);
+    return this.companiesRepository.save({ ...company, ...updateCompanyDto });
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, user: any): Promise<void> {
     await this.companiesRepository.delete(id);
   }
 }

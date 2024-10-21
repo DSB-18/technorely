@@ -6,18 +6,27 @@ import {
   Param,
   Patch,
   Delete,
+  Req,
+  Res,
 } from '@nestjs/common';
 import { CompaniesService } from './companies.service';
 import { Company } from './company.entity';
-import { CreateCompanyDto } from './dto/create-company.dto'; // Create this DTO for input validation
+import { CreateCompanyDto } from './dto/create-company.dto';
 
 @Controller('companies')
 export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}
 
   @Post()
-  create(@Body() createCompanyDto: CreateCompanyDto): Promise<Company> {
-    return this.companiesService.create(createCompanyDto);
+  async create(
+    @Body() createCompanyDto: CreateCompanyDto,
+    @Req() req,
+  ): Promise<{ message: string; company: Company }> {
+    const company = await this.companiesService.create(
+      createCompanyDto,
+      req.user,
+    );
+    return { message: 'Company created successfully', company };
   }
 
   @Get()
@@ -31,15 +40,25 @@ export class CompaniesController {
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: number,
     @Body() updateCompanyDto: Partial<CreateCompanyDto>,
-  ): Promise<Company> {
-    return this.companiesService.update(id, updateCompanyDto);
+    @Req() req,
+  ): Promise<{ message: string; company: Company }> {
+    const company = await this.companiesService.update(
+      id,
+      updateCompanyDto,
+      req.user,
+    );
+    return { message: 'Company updated successfully', company };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number): Promise<void> {
-    return this.companiesService.remove(id);
+  async remove(
+    @Param('id') id: number,
+    @Req() req,
+  ): Promise<{ message: string }> {
+    await this.companiesService.remove(id, req.user);
+    return { message: 'Company deleted successfully' };
   }
 }
