@@ -5,7 +5,7 @@ import { CreateUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { Request } from 'express';
+import { RequestWithUser } from './request-with-user';
 
 @Controller('auth')
 export class AuthController {
@@ -25,10 +25,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Patch('change-password')
   async changePassword(
-    @Req() req: Request,
+    @Req() req: RequestWithUser,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    const userId = req.user['userId'];
+    const userId = req.user.id;
     return this.authService.changePassword(userId, updatePasswordDto);
   }
 }
