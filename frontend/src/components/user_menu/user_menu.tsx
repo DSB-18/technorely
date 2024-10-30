@@ -60,7 +60,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ userName }) => {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" style={{ flexGrow: 1 }}>
-            Your App Name
+            Dashboard
           </Typography>
           <IconButton onClick={handleMenuOpen}>
             <Avatar>{userName.charAt(0).toUpperCase()}</Avatar>
