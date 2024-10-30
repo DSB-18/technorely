@@ -21,35 +21,36 @@ const Settings = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const userName = "User";
 
-  const handleUpdateUser = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const updatedUserData = {
-      name: updatedName,
-      email: updatedEmail,
-      password: newPassword,
-    };
-
-    try {
-      const response = await fetch("http://localhost:3000/users/update", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-        body: JSON.stringify(updatedUserData),
-      });
-
-      if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(`Failed to update user data: ${errorMessage}`);
-      }
-
-      const updatedUser = await response.json();
-      toast.success("User data updated successfully!");
-    } catch (error: any) {
-      toast.error(error.message);
-    }
+const handleUpdateUser = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  const updatedUserData = {
+    name: updatedName,
+    email: updatedEmail,
+    currentPassword: currentPassword,
+    password: newPassword,
   };
+
+  try {
+    const response = await fetch("http://localhost:3000/users/update", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+      body: JSON.stringify(updatedUserData),
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      throw new Error(`Failed to update user data: ${errorMessage}`);
+    }
+
+    toast.success("User data updated successfully!");
+  } catch (error: any) {
+    toast.error(error.message);
+  }
+};
+
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -73,7 +74,10 @@ const Settings = () => {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" style={{ flexGrow: 1 }}>
-            <Link to="/dashboard" style={{ color: "inherit", textDecoration: "none" }}>
+            <Link
+              to="/dashboard"
+              style={{ color: "inherit", textDecoration: "none" }}
+            >
               Your App Name
             </Link>
           </Typography>
@@ -132,6 +136,7 @@ const Settings = () => {
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              required
             />
           </div>
           <div>
@@ -140,6 +145,7 @@ const Settings = () => {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              required
             />
           </div>
           <button type="submit">Update</button>

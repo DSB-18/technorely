@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import "./style.css";
@@ -11,7 +11,32 @@ interface LoginUserDto {
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [backendStatus, setBackendStatus] = useState<"ready" | "not ready">(
+    "not ready"
+  );
   const navigate = useNavigate();
+
+  const checkBackendStatus = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/?timestamp=${new Date().getTime()}`,
+        {
+          method: "GET",
+          cache: "no-store",
+        }
+      );
+      setBackendStatus(response.ok ? "ready" : "not ready");
+    } catch (error) {
+      console.error("Error checking backend status:", error);
+      setBackendStatus("not ready");
+    }
+  };
+
+  useEffect(() => {
+    const intervalId = setInterval(checkBackendStatus, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   const mutation = useMutation({
     mutationFn: async (userData: LoginUserDto) => {
@@ -26,7 +51,6 @@ const Login = () => {
       }
 
       const data = await response.json();
-
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
       localStorage.setItem("role", data.role);
@@ -48,28 +72,42 @@ const Login = () => {
 
   return (
     <div className="login-page">
-      <form onSubmit={handleSubmit} className="form-container">
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoComplete="password"
-        />
-        <button type="submit">Log In</button>
-        <p>
-          Don't have an account? <a href="/signup">Sign Up</a>
-        </p>
-      </form>
+      <div className="login-container">
+        <form onSubmit={handleSubmit} className="form-container">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="password"
+          />
+          <button type="submit">Log In</button>
+          <p>
+            Don't have an account? <a href="/signup">Sign Up</a>
+          </p>
+        </form>
+
+        <div className="backend-status">
+          <span
+            className="status-indicator"
+            style={{
+              backgroundColor: backendStatus === "ready" ? "green" : "red",
+            }}
+          ></span>
+          <span>
+            {backendStatus === "ready" ? "Backend ready" : "Backend not ready"}
+          </span>
+        </div>
+      </div>
     </div>
   );
 };

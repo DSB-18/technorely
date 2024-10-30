@@ -2,7 +2,7 @@ html,
 body {
   height: 100%;
   margin: 0;
-  background-color: #999;
+  background-color: #999999 !important;
 }
 
 .login-page,
@@ -27,7 +27,7 @@ body {
 }
 
 .unauthorized-page .form-container {
-  width: 500px; /* Specific width for Unauthorized page */
+  width: 500px;
 }
 
 input,
@@ -37,7 +37,27 @@ button {
 }
 
 p,
-a, h1 {
+a,
+h1 {
   margin-top: 10px;
   text-align: center;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.status-indicator {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.backend-status {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
 }
