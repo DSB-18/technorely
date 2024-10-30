@@ -1,3 +1,5 @@
+import { randomBytes } from 'crypto';
+
 export const jwtConstants = {
-  secret: 'secret_key',
+  secret: process.env.JWT_SECRET || randomBytes(64).toString('hex'),
 };

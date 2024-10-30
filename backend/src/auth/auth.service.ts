@@ -31,20 +31,77 @@ export class AuthService {
       loginUserDto.password,
     );
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials');
     }
-    const payload = { username: user.name, sub: user.id, role: user.role };
+
+    const payload = {
+      username: user.name,
+      sub: user.id,
+      role: user.role,
+      email: user.email,
+    };
+    const accessToken = this.jwtService.sign(payload);
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken,
+      refreshToken,
+      role: user.role,
     };
   }
 
+  async refreshAccessToken(
+    refreshToken: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    try {
+      const payload = this.jwtService.verify(refreshToken);
+
+      const newAccessToken = this.jwtService.sign({
+        username: payload.username,
+        sub: payload.sub,
+        role: payload.role,
+      });
+      const newRefreshToken = this.jwtService.sign(
+        {
+          username: payload.username,
+          sub: payload.sub,
+        },
+        { expiresIn: '7d' },
+      );
+
+      return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+    } catch (error) {
+      return null;
+    }
+  }
+
   async register(createUserDto: CreateUserDto) {
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    return this.usersService.create({
+    const existingUser = await this.usersService.findOneByEmail(
+      createUserDto.email,
+    );
+    if (existingUser) {
+      throw new BadRequestException('User with this email already exists.');
+    }
+
+    const newUser = await this.usersService.create({
       ...createUserDto,
-      password: hashedPassword,
+      role: createUserDto.role || 'User',
     });
+
+    const payload = {
+      username: newUser.name,
+      sub: newUser.id,
+      role: newUser.role,
+      email: newUser.email,
+    };
+    const accessToken = this.jwtService.sign(payload);
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+
+    return {
+      accessToken,
+      refreshToken,
+      role: newUser.role,
+    };
   }
 
   async changePassword(userId: number, updatePasswordDto: UpdatePasswordDto) {
@@ -55,7 +112,6 @@ export class AuthService {
     }
 
     const user = await this.usersService.findOne(userId);
-
     const isPasswordValid = await bcrypt.compare(
       currentPassword,
       user.password,
@@ -65,7 +121,6 @@ export class AuthService {
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-
     user.password = hashedNewPassword;
     await this.usersService.updatePassword(userId, hashedNewPassword);
 
