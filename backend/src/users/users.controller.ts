@@ -6,11 +6,13 @@ import {
   Body,
   Patch,
   UseGuards,
+  BadRequestException,
   Req,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 import { User } from '../common/user.decorator';
 import * as bcrypt from 'bcrypt';
 
@@ -60,5 +62,41 @@ export class UsersController {
     }
 
     return this.usersService.updateUser(userId, updateUserDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('update-password')
+  async updatePassword(
+    @Body() passwordData: UpdatePasswordDto,
+    @User() user: any,
+  ) {
+    const userId = user.userId;
+
+    // Validate input
+    if (
+      !passwordData ||
+      !passwordData.currentPassword ||
+      !passwordData.newPassword ||
+      !userId
+    ) {
+      throw new BadRequestException('Invalid data');
+    }
+
+    const currentUser = await this.usersService.findOne(userId);
+
+    // Check if current password matches
+    const isPasswordMatching = await bcrypt.compare(
+      passwordData.currentPassword,
+      currentUser.password,
+    );
+
+    if (!isPasswordMatching) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    // Update password
+    await this.usersService.updatePassword(userId, passwordData.newPassword);
+
+    return { message: 'Password updated successfully' }; // Return success message or other data
   }
 }

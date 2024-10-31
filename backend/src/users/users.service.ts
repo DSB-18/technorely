@@ -48,7 +48,6 @@ export class UsersService {
     if (!user) {
       throw new BadRequestException('User not found');
     }
-
     if (updateUserDto.password && updateUserDto.currentPassword) {
       const passwordMatch = await bcrypt.compare(
         updateUserDto.currentPassword,
@@ -57,13 +56,10 @@ export class UsersService {
       if (!passwordMatch) {
         throw new BadRequestException('Current password is incorrect');
       }
-
       const salt = await bcrypt.genSalt();
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, salt);
     }
-
     const { currentPassword, ...updateData } = updateUserDto;
-
     await this.usersRepository.update(id, updateData);
     return this.usersRepository.findOneBy({ id });
   }

@@ -40,14 +40,12 @@ export class AuthController {
     if (!newTokens) {
       throw new UnauthorizedException('Invalid refresh token');
     }
-
     return res.status(HttpStatus.OK).json(newTokens);
   }
 
   @Post('register')
   async register(@Body() createUserDto: CreateUserDto, @Res() res: Response) {
     const registrationResult = await this.authService.register(createUserDto);
-
     return res.status(HttpStatus.CREATED).json({
       accessToken: registrationResult.accessToken,
       refreshToken: registrationResult.refreshToken,
@@ -60,9 +58,14 @@ export class AuthController {
   async changePassword(
     @Req() req: RequestWithUser,
     @Body() updatePasswordDto: UpdatePasswordDto,
+    @Res() res: Response,
   ) {
     const userId = req.user.id;
-    return this.authService.changePassword(userId, updatePasswordDto);
+    const result = await this.authService.changePassword(
+      userId,
+      updatePasswordDto,
+    );
+    return res.status(HttpStatus.OK).json(result); // Ensure new tokens are sent back
   }
 
   @Patch('admin-action')

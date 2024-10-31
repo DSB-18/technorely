@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
@@ -33,7 +34,6 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-
     const payload = {
       username: user.name,
       sub: user.id,
@@ -42,7 +42,6 @@ export class AuthService {
     };
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-
     return {
       accessToken,
       refreshToken,
@@ -55,7 +54,6 @@ export class AuthService {
   ): Promise<{ accessToken: string; refreshToken: string }> {
     try {
       const payload = this.jwtService.verify(refreshToken);
-
       const newAccessToken = this.jwtService.sign({
         username: payload.username,
         sub: payload.sub,
@@ -68,7 +66,6 @@ export class AuthService {
         },
         { expiresIn: '7d' },
       );
-
       return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     } catch (error) {
       return null;
@@ -82,12 +79,10 @@ export class AuthService {
     if (existingUser) {
       throw new BadRequestException('User with this email already exists.');
     }
-
     const newUser = await this.usersService.create({
       ...createUserDto,
       role: createUserDto.role || 'User',
     });
-
     const payload = {
       username: newUser.name,
       sub: newUser.id,
@@ -96,7 +91,6 @@ export class AuthService {
     };
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-
     return {
       accessToken,
       refreshToken,
@@ -106,12 +100,13 @@ export class AuthService {
 
   async changePassword(userId: number, updatePasswordDto: UpdatePasswordDto) {
     const { currentPassword, newPassword, confirmPassword } = updatePasswordDto;
-
     if (newPassword !== confirmPassword) {
       throw new BadRequestException('New passwords do not match.');
     }
-
     const user = await this.usersService.findOne(userId);
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
     const isPasswordValid = await bcrypt.compare(
       currentPassword,
       user.password,
@@ -119,11 +114,23 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Current password is incorrect.');
     }
-
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedNewPassword;
     await this.usersService.updatePassword(userId, hashedNewPassword);
 
-    return { message: 'Password successfully changed.' };
+    const payload = {
+      username: user.name,
+      sub: user.id,
+      role: user.role,
+      email: user.email,
+    };
+    const newAccessToken = this.jwtService.sign(payload);
+    const newRefreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+
+    return {
+      message: 'Password successfully changed.',
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    };
   }
 }

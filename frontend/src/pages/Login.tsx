@@ -47,7 +47,8 @@ const Login = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Error logging in");
+        const errorData = await response.json(); // Get error response from backend
+        throw new Error(errorData.message || "Error logging in");
       }
 
       const data = await response.json();
@@ -62,6 +63,7 @@ const Login = () => {
 
     onError: (error) => {
       console.error("Error logging in:", error);
+      alert(`Login failed: ${error.message}`);
     },
   });
 
