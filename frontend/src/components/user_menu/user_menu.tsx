@@ -14,7 +14,7 @@ import {
   DialogTitle,
   Button,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface UserProfileProps {
   userName: string;
@@ -55,17 +55,36 @@ const UserProfile: React.FC<UserProfileProps> = ({ userName }) => {
     setOpenDialog(false);
   };
 
+  const handleCreateCompany = () => {
+    navigate("/create-company");
+  };
+
   return (
     <>
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6" style={{ flexGrow: 1 }}>
-            Dashboard
+          <Typography variant="h6">
+            <Link
+              to="/dashboard"
+              style={{ color: "inherit", textDecoration: "none" }}
+            >
+              Dashboard
+            </Link>
           </Typography>
+          <Button
+            variant="contained"
+            style={{
+              backgroundColor: "#7986cb",
+              marginLeft: "100px",
+            }}
+            onClick={handleCreateCompany}
+          >
+            Create Company
+          </Button>
+          <div style={{ flexGrow: 1 }} />{" "}
           <IconButton onClick={handleMenuOpen}>
             <Avatar>{userName.charAt(0).toUpperCase()}</Avatar>
           </IconButton>
-
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}

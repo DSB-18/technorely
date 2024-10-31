@@ -12,6 +12,7 @@ import PrivateRoute from "./PrivateRoute";
 import Unauthorized from "../pages/Unauthorized";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import CreateCompany from "../pages/CreateCompany";
 
 const AppRoutes = () => {
   return (
@@ -36,6 +37,7 @@ const AppRoutes = () => {
             </PrivateRoute>
           }
         />
+        <Route path="/create-company" element={<CreateCompany />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
         <Route path="*" element={<Navigate to="/login" />} />{" "}
       </Routes>

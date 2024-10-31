@@ -1,3 +1,5 @@
+Project is still in development and updates very often.
+
 Backend must work on port 3000, and frontend on port 3001
 
 Terminal commands to run the backend:
