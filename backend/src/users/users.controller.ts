@@ -72,7 +72,6 @@ export class UsersController {
   ) {
     const userId = user.userId;
 
-    // Validate input
     if (
       !passwordData ||
       !passwordData.currentPassword ||
@@ -84,7 +83,6 @@ export class UsersController {
 
     const currentUser = await this.usersService.findOne(userId);
 
-    // Check if current password matches
     const isPasswordMatching = await bcrypt.compare(
       passwordData.currentPassword,
       currentUser.password,
@@ -94,9 +92,8 @@ export class UsersController {
       throw new BadRequestException('Current password is incorrect');
     }
 
-    // Update password
     await this.usersService.updatePassword(userId, passwordData.newPassword);
 
-    return { message: 'Password updated successfully' }; // Return success message or other data
+    return { message: 'Password updated successfully' };
   }
 }

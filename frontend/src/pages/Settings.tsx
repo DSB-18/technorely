@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import {
   AppBar,
   Toolbar,
@@ -134,6 +134,7 @@ const Settings = () => {
     localStorage.removeItem("refreshToken");
     navigate("/login");
     setLogoutDialogOpen(false);
+    toast.success("Logged out successfully!");
   };
 
   const handleLogoutDialogOpen = () => {
@@ -210,7 +211,7 @@ const Settings = () => {
           component={Link}
           to="/dashboard"
         >
-          <Typography variant="h6" style={{ lineHeight: '1rem' }}>
+          <Typography variant="h6" style={{ lineHeight: "1rem" }}>
             ✖
           </Typography>
         </IconButton>
@@ -277,9 +278,6 @@ const Settings = () => {
           <Box component="form" onSubmit={handlePasswordUpdate}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <p style={{ color: "red" }}>
-                  change password currently not working
-                </p>
                 <TextField
                   fullWidth
                   label="Current Password"
@@ -313,12 +311,7 @@ const Settings = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  type="submit"
-                  disabled
-                >
+                <Button variant="contained" color="primary" type="submit">
                   Update Password
                 </Button>
               </Grid>
@@ -326,6 +319,7 @@ const Settings = () => {
           </Box>
         )}
       </Box>
+      <ToastContainer />
     </>
   );
 };

@@ -72,7 +72,7 @@ export class AuthController {
       userId,
       updatePasswordDto,
     );
-    return res.status(HttpStatus.OK).json(result); // Ensure new tokens are sent back
+    return res.status(HttpStatus.OK).json(result);
   }
 
   @Patch('admin-action')

@@ -10,11 +10,13 @@ import Dashboard from "../pages/Dashboard";
 import Settings from "../pages/Settings";
 import PrivateRoute from "./PrivateRoute";
 import Unauthorized from "../pages/Unauthorized";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const AppRoutes = () => {
   return (
     <Router>
+      <ToastContainer />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
