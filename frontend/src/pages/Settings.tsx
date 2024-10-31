@@ -14,9 +14,13 @@ import {
   Grid,
   TextField,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import { red } from "@mui/material/colors";
 
 const Settings = () => {
   const [value, setValue] = useState(0);
@@ -26,6 +30,7 @@ const Settings = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const navigate = useNavigate();
   const userName = "User";
 
@@ -81,18 +86,21 @@ const Settings = () => {
     }
     const passwordData = {
       currentPassword,
-      newPassword, // Match the DTO field
-      confirmPassword, // Ensure it matches the DTO
+      newPassword,
+      confirmPassword,
     };
     try {
-      const response = await fetch("http://localhost:3000/auth/change-password", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-        body: JSON.stringify(passwordData),
-      });
+      const response = await fetch(
+        "http://localhost:3000/auth/change-password",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+          body: JSON.stringify(passwordData),
+        }
+      );
       if (!response.ok) {
         const errorMessage = await response.text();
         throw new Error(`Failed to update password: ${errorMessage}`);
@@ -121,11 +129,20 @@ const Settings = () => {
     handleMenuClose();
   };
 
-  const handleLogout = () => {
+  const handleLogoutConfirm = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     navigate("/login");
+    setLogoutDialogOpen(false);
+  };
+
+  const handleLogoutDialogOpen = () => {
+    setLogoutDialogOpen(true);
     handleMenuClose();
+  };
+
+  const handleLogoutDialogClose = () => {
+    setLogoutDialogOpen(false);
   };
 
   return (
@@ -151,12 +168,28 @@ const Settings = () => {
             <MenuItem onClick={handleSettings}>
               <Typography>Settings</Typography>
             </MenuItem>
-            <MenuItem onClick={handleLogout}>
+            <MenuItem onClick={handleLogoutDialogOpen}>
               <Typography>Logout</Typography>
             </MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>
+      <Dialog open={logoutDialogOpen} onClose={handleLogoutDialogClose}>
+        <DialogTitle>Confirm Logout</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to log out?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleLogoutDialogClose} color="primary">
+            No
+          </Button>
+          <Button onClick={handleLogoutConfirm} color="primary">
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Box
         sx={{
           padding: 2,
@@ -230,7 +263,9 @@ const Settings = () => {
           <Box component="form" onSubmit={handlePasswordUpdate}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <p style={{ color: "red" }}>change password currently not working</p>
+                <p style={{ color: "red" }}>
+                  change password currently not working
+                </p>
                 <TextField
                   fullWidth
                   label="Current Password"

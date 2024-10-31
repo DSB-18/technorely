@@ -28,7 +28,14 @@ export class AuthController {
   @Post('login')
   @UseGuards(LocalAuthGuard)
   async login(@Body() loginUserDto: LoginUserDto) {
-    return this.authService.login(loginUserDto);
+    const user = await this.authService.validateUser(
+      loginUserDto.email,
+      loginUserDto.password,
+    );
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    return this.authService.login(user);
   }
 
   @Post('refresh-token')

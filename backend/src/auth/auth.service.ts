@@ -9,6 +9,7 @@ import { UsersService } from '../users/users.service';
 import { CreateUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { User } from '../users/user.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -18,7 +19,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<any> {
+  async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.usersService.findOneByEmail(email);
     if (user && (await bcrypt.compare(password, user.password))) {
       return user;
@@ -34,14 +35,17 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
+
     const payload = {
       username: user.name,
       sub: user.id,
       role: user.role,
       email: user.email,
     };
+
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+
     return {
       accessToken,
       refreshToken,
@@ -60,15 +64,13 @@ export class AuthService {
         role: payload.role,
       });
       const newRefreshToken = this.jwtService.sign(
-        {
-          username: payload.username,
-          sub: payload.sub,
-        },
+        { username: payload.username, sub: payload.sub, role: payload.role },
         { expiresIn: '7d' },
       );
+
       return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     } catch (error) {
-      return null;
+      throw new UnauthorizedException('Invalid refresh token');
     }
   }
 
@@ -79,18 +81,22 @@ export class AuthService {
     if (existingUser) {
       throw new BadRequestException('User with this email already exists.');
     }
+
     const newUser = await this.usersService.create({
       ...createUserDto,
       role: createUserDto.role || 'User',
     });
+
     const payload = {
       username: newUser.name,
       sub: newUser.id,
       role: newUser.role,
       email: newUser.email,
     };
+
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+
     return {
       accessToken,
       refreshToken,
@@ -100,13 +106,16 @@ export class AuthService {
 
   async changePassword(userId: number, updatePasswordDto: UpdatePasswordDto) {
     const { currentPassword, newPassword, confirmPassword } = updatePasswordDto;
+
     if (newPassword !== confirmPassword) {
       throw new BadRequestException('New passwords do not match.');
     }
+
     const user = await this.usersService.findOne(userId);
     if (!user) {
       throw new NotFoundException('User not found.');
     }
+
     const isPasswordValid = await bcrypt.compare(
       currentPassword,
       user.password,
@@ -114,8 +123,8 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Current password is incorrect.');
     }
+
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedNewPassword;
     await this.usersService.updatePassword(userId, hashedNewPassword);
 
     const payload = {
@@ -124,6 +133,7 @@ export class AuthService {
       role: user.role,
       email: user.email,
     };
+
     const newAccessToken = this.jwtService.sign(payload);
     const newRefreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
 

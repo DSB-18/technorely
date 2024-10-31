@@ -20,10 +20,7 @@ const Login = () => {
     try {
       const response = await fetch(
         `http://localhost:3000/?timestamp=${new Date().getTime()}`,
-        {
-          method: "GET",
-          cache: "no-store",
-        }
+        { method: "GET", cache: "no-store" }
       );
       setBackendStatus(response.ok ? "ready" : "not ready");
     } catch (error) {
@@ -33,10 +30,15 @@ const Login = () => {
   };
 
   useEffect(() => {
+    checkBackendStatus();
     const intervalId = setInterval(checkBackendStatus, 1000);
-
     return () => clearInterval(intervalId);
   }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (token) navigate("/dashboard");
+  }, [navigate]);
 
   const mutation = useMutation({
     mutationFn: async (userData: LoginUserDto) => {
@@ -47,7 +49,7 @@ const Login = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json(); // Get error response from backend
+        const errorData = await response.json();
         throw new Error(errorData.message || "Error logging in");
       }
 
@@ -61,8 +63,8 @@ const Login = () => {
       navigate("/dashboard");
     },
 
-    onError: (error) => {
-      console.error("Error logging in:", error);
+    onError: (error: any) => {
+      console.error("Error logging in:", error.message);
       alert(`Login failed: ${error.message}`);
     },
   });
