@@ -198,8 +198,22 @@ const Settings = () => {
           justifyContent: "center",
           backgroundColor: "white",
           borderRadius: 5,
+          position: "relative",
         }}
       >
+        <IconButton
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+          }}
+          component={Link}
+          to="/dashboard"
+        >
+          <Typography variant="h6" style={{ lineHeight: '1rem' }}>
+            ✖
+          </Typography>
+        </IconButton>
         <Typography variant="h4" align="center" gutterBottom>
           Settings
         </Typography>

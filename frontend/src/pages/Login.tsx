@@ -35,10 +35,11 @@ const Login = () => {
     return () => clearInterval(intervalId);
   }, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) navigate("/dashboard");
-  }, [navigate]);
+  // may cause throttling
+  // useEffect(() => {
+  //   const token = localStorage.getItem("accessToken");
+  //   if (token) navigate("/dashboard");
+  // }, [navigate]);
 
   const mutation = useMutation({
     mutationFn: async (userData: LoginUserDto) => {
